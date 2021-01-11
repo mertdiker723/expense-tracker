@@ -1,12 +1,16 @@
-import React, { useState, useContext } from 'react'
-import { GlobalContext } from '../context/GlobalState.js';
+import React, { useEffect, useRef, useState } from 'react'
+import { connect } from 'react-redux';
+import { addIncome } from '../action/tracker-action.js';
 
-export const AddTransaction = () => {
+const AddTransaction = ({ onAddIncome }) => {
     const [text, setText] = useState('');
     const [amount, setAmount] = useState(null);
     const [validation, setValidation] = useState(false);
+    const textRef = useRef(null);
 
-    const { addTransaction } = useContext(GlobalContext);
+    useEffect(() => {
+        textRef.current.focus();
+    }, [])
 
     const onSubmit = (e) => {
         e.preventDefault();
@@ -17,9 +21,11 @@ export const AddTransaction = () => {
                 text,
                 amount: +amount
             }
-            addTransaction(newTransaction);
+            onAddIncome(newTransaction);
             setText('');
             setAmount(null);
+            textRef.current.focus();
+
         }
         else {
             setValidation(true);
@@ -35,14 +41,13 @@ export const AddTransaction = () => {
         }
         setText(e.target.value);
     }
-
     return (
         <>
             <h3>Add new transaction</h3>
             <form onSubmit={onSubmit}>
                 <div className="form-control">
                     <label htmlFor="text"><b>Text</b></label>
-                    <input type="text" value={text} onChange={(e) => onSetText(e)} placeholder="Enter text..." />
+                    <input type="text" value={text} ref={textRef} onChange={(e) => onSetText(e)} placeholder="Enter text..." />
                     {validation ? <div style={{ color: "red" }}>Must be written</div> : ""}
                 </div>
                 <div className="form-control">
@@ -55,3 +60,15 @@ export const AddTransaction = () => {
         </>
     )
 }
+
+const mapStateToProps = (state) => {
+    return {
+        state
+    }
+}
+
+const mapDispatchToProps = {
+    onAddIncome: addIncome
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AddTransaction);
